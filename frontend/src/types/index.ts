@@ -1,6 +1,7 @@
 export interface Song {
 	_id: string;
 	title: string;
+	mood: string;
 	artist: string;
 	albumId: string | null;
 	imageUrl: string;

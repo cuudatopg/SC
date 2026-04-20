@@ -29,6 +29,7 @@ const SongsTable = () => {
 					<TableHead className='w-[50px]'></TableHead>
 					<TableHead>Title</TableHead>
 					<TableHead>Artist</TableHead>
+					<TableHead>Mood</TableHead>
 					<TableHead>Release Date</TableHead>
 					<TableHead className='text-right'>Actions</TableHead>
 				</TableRow>
@@ -42,6 +43,7 @@ const SongsTable = () => {
 						</TableCell>
 						<TableCell className='font-medium'>{song.title}</TableCell>
 						<TableCell>{song.artist}</TableCell>
+						<TableCell>{song.mood}</TableCell>
 						<TableCell>
 							<span className='inline-flex items-center gap-1 text-zinc-400'>
 								<Calendar className='h-4 w-4' />
