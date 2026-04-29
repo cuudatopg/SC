@@ -37,22 +37,9 @@ const LeftSidebar = () => {
 						<HomeIcon className='mr-2 size-5' />
 						<span className='hidden md:inline'>Home</span>
 					</Link>
-					<Link
-						to={"/search"}
-						className={cn(
-							buttonVariants({
-								variant: "ghost",
-								className: "w-full justify-start text-white hover:bg-zinc-800",
-							})
-						)}
-					>
-						<Search className='mr-2 size-5' />
-						<span className='hidden md:inline'>Search</span>
-					</Link>
-
 					<SignedIn>
 						<Link
-							to={"/chat"}
+							to={"/search"}
 							className={cn(
 								buttonVariants({
 									variant: "ghost",
@@ -60,8 +47,8 @@ const LeftSidebar = () => {
 								})
 							)}
 						>
-							<MessageCircle className='mr-2 size-5' />
-							<span className='hidden md:inline'>Messages</span>
+							<Search className='mr-2 size-5' />
+							<span className='hidden md:inline'>Search</span>
 						</Link>
 					</SignedIn>
 				</div>
