@@ -1,6 +1,7 @@
 export interface Song {
 	_id: string;
 	title: string;
+	description: string;
 	mood: string;
 	artist: string;
 	albumId: string | null;
@@ -15,6 +16,7 @@ export interface Album {
 	_id: string;
 	title: string;
 	artist: string;
+	description:string;
 	imageUrl: string;
 	releaseYear: number;
 	songs: Song[];

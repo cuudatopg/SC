@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { axiosInstance } from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
@@ -22,9 +21,9 @@ interface NewSong {
 	mood: string;
 	album: string;
 	duration: string;
+	description: string; // 1. Thêm type cho description
 }
 
-// Helper function for audio duration
 const getAudioDuration = (file: File): Promise<number> => {
 	return new Promise((resolve) => {
 		const url = URL.createObjectURL(file);
@@ -37,7 +36,7 @@ const getAudioDuration = (file: File): Promise<number> => {
 };
 
 const AddSongDialog = () => {
-	const { albums } = useMusicStore();
+	const { albums, addSong } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -47,6 +46,7 @@ const AddSongDialog = () => {
 		mood: "",
 		album: "",
 		duration: "0",
+		description: "", // 2. Thêm giá trị khởi tạo
 	});
 
 	const [files, setFiles] = useState<{ audio: File | null; image: File | null }>({
@@ -57,7 +57,6 @@ const AddSongDialog = () => {
 	const audioInputRef = useRef<HTMLInputElement>(null);
 	const imageInputRef = useRef<HTMLInputElement>(null);
 
-	// Audio change handler
 	const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
@@ -65,7 +64,6 @@ const AddSongDialog = () => {
 		try {
 			const duration = await getAudioDuration(file);
 			setFiles((prev) => ({ ...prev, audio: file }));
-			// Tự động điền duration (giây) vào form
 			setNewSong((prev) => ({ ...prev, duration: duration.toString() }));
 		} catch (error: any)
 		{
@@ -86,6 +84,7 @@ const AddSongDialog = () => {
 			formData.append("artist", newSong.artist);
 			formData.append("mood", newSong.mood);
 			formData.append("duration", newSong.duration);
+			formData.append("description", newSong.description); // 3. Gắn dữ liệu vào FormData
 			
 			if (newSong.album && newSong.album !== "none") {
 				formData.append("albumId", newSong.album);
@@ -94,19 +93,20 @@ const AddSongDialog = () => {
 			formData.append("audioFile", files.audio);
 			formData.append("imageFile", files.image);
 
-			await axiosInstance.post("/admin/songs", formData, {
-				headers: { "Content-Type": "multipart/form-data" },
-			});
+			await addSong(formData);
 
+			setFiles({ audio: null, image: null });
+
+			// Reset form
 			setNewSong({
 				title: "",
 				artist: "",
 				mood: "",
 				album: "",
 				duration: "0",
+				description: "", // Reset description
 			});
 
-			setFiles({ audio: null, image: null });
 			setSongDialogOpen(false);
 			toast.success("Song added successfully");
 		} catch (error: any) {
@@ -132,7 +132,6 @@ const AddSongDialog = () => {
 				</DialogHeader>
 
 				<div className='space-y-4 py-4'>
-					{/* Hidden Inputs */}
 					<input
 						type='file'
 						accept='audio/*'
@@ -149,7 +148,6 @@ const AddSongDialog = () => {
 						onChange={(e) => setFiles((prev) => ({ ...prev, image: e.target.files?.[0] || null }))}
 					/>
 
-					{/* Image upload area */}
 					<div
 						className='flex items-center justify-center p-6 border-2 border-dashed border-zinc-700 rounded-lg cursor-pointer hover:bg-zinc-800/50 transition-colors'
 						onClick={() => imageInputRef.current?.click()}
@@ -174,7 +172,6 @@ const AddSongDialog = () => {
 						</div>
 					</div>
 
-					{/* Audio upload button */}
 					<div className='space-y-2'>
 						<label className='text-sm font-medium'>Audio File</label>
 						<Button 
@@ -187,7 +184,6 @@ const AddSongDialog = () => {
 						</Button>
 					</div>
 
-					{/* Title & Artist */}
 					<div className='grid grid-cols-2 gap-4'>
 						<div className='space-y-2'>
 							<label className='text-sm font-medium'>Title</label>
@@ -209,41 +205,51 @@ const AddSongDialog = () => {
 						</div>
 					</div>
 
-					{/* Mood Select */}
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Mood</label>
-						<Select
-							value={newSong.mood}
-							onValueChange={(value) => setNewSong({ ...newSong, mood: value })}
-						>
-							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
-								<SelectValue placeholder='Select mood' />
-							</SelectTrigger>
-							<SelectContent className='bg-zinc-800 border-zinc-700'>
-								<SelectItem value="angry">Angry</SelectItem>
-								<SelectItem value="energetic">Energetic</SelectItem>
-								<SelectItem value="fear">Fear</SelectItem>
-								<SelectItem value="happy">Happy</SelectItem>
-								<SelectItem value="neutral">Neutral</SelectItem>
-								<SelectItem value="sad">Sad</SelectItem>
-								<SelectItem value="surprise">Surprise</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-
-					{/* Duration (Auto-filled) */}
-					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Duration (seconds)</label>
-						<Input
-							type='number'
-							min='0'
-							value={newSong.duration}
-							onChange={(e) => setNewSong({ ...newSong, duration: e.target.value || "0" })}
-							className='bg-zinc-800 border-zinc-700'
+						<label className='text-sm font-medium'>Description</label>
+						{/* 4. Thêm UI nhập Description */}
+						<textarea
+							value={newSong.description}
+							onChange={(e) => setNewSong({ ...newSong, description: e.target.value })}
+							className='flex min-h-[80px] w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-600/50 focus:border-orange-600/50 resize-none'
+							placeholder="Write a brief description about this song..."
 						/>
 					</div>
 
-					{/* Album Select */}
+					<div className='grid grid-cols-2 gap-4'>
+						<div className='space-y-2'>
+							<label className='text-sm font-medium'>Mood</label>
+							<Select
+								value={newSong.mood}
+								onValueChange={(value) => setNewSong({ ...newSong, mood: value })}
+							>
+								<SelectTrigger className='bg-zinc-800 border-zinc-700'>
+									<SelectValue placeholder='Select mood' />
+								</SelectTrigger>
+								<SelectContent className='bg-zinc-800 border-zinc-700'>
+									<SelectItem value="angry">Angry</SelectItem>
+									<SelectItem value="energetic">Energetic</SelectItem>
+									<SelectItem value="fear">Fear</SelectItem>
+									<SelectItem value="happy">Happy</SelectItem>
+									<SelectItem value="neutral">Neutral</SelectItem>
+									<SelectItem value="sad">Sad</SelectItem>
+									<SelectItem value="surprise">Surprise</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className='space-y-2'>
+							<label className='text-sm font-medium'>Duration (sec)</label>
+							<Input
+								type='number'
+								min='0'
+								value={newSong.duration}
+								onChange={(e) => setNewSong({ ...newSong, duration: e.target.value || "0" })}
+								className='bg-zinc-800 border-zinc-700'
+							/>
+						</div>
+					</div>
+
 					<div className='space-y-2'>
 						<label className='text-sm font-medium'>Album (Optional)</label>
 						<Select

@@ -21,7 +21,7 @@ export const createSong = async (req, res, next) => {
 			return res.status(400).json({ message: "Please upload all files" });
 		}
 
-		const { title, artist, albumId, duration, mood } = req.body;
+		const { title, artist, albumId, duration, mood, description } = req.body;
 		const audioFile = req.files.audioFile;
 		const imageFile = req.files.imageFile;
 
@@ -31,6 +31,7 @@ export const createSong = async (req, res, next) => {
 		const song = new Song({
 			title,
 			mood,
+			description,
 			artist,
 			audioUrl,
 			imageUrl,
@@ -40,7 +41,6 @@ export const createSong = async (req, res, next) => {
 
 		await song.save();
 
-		// if song belongs to an album, update the album's songs array
 		if (albumId) {
 			await Album.findByIdAndUpdate(albumId, {
 				$push: { songs: song._id },
@@ -53,13 +53,71 @@ export const createSong = async (req, res, next) => {
 	}
 };
 
+export const updateSong = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { title, artist, albumId, duration, mood, description } = req.body;
+
+		const song = await Song.findById(id);
+		if (!song) {
+			return res.status(404).json({ message: "Song not found" });
+		}
+
+		let audioUrl = song.audioUrl;
+		let imageUrl = song.imageUrl;
+
+		if (req.files) {
+			if (req.files.audioFile) {
+				audioUrl = await uploadToCloudinary(req.files.audioFile);
+			}
+			if (req.files.imageFile) {
+				imageUrl = await uploadToCloudinary(req.files.imageFile);
+			}
+		}
+
+		const oldAlbumId = song.albumId;
+
+		const updatedSong = await Song.findByIdAndUpdate(
+			id,
+			{
+				title,
+				artist,
+				mood,
+				description,
+				duration,
+				audioUrl,
+				imageUrl,
+				albumId: albumId === "none" ? null : albumId,
+			},
+			{ new: true }
+		);
+
+		if (oldAlbumId?.toString() !== albumId) {
+			if (oldAlbumId) {
+				await Album.findByIdAndUpdate(oldAlbumId, {
+					$pull: { songs: id },
+				});
+			}
+
+			if (albumId && albumId !== "none") {
+				await Album.findByIdAndUpdate(albumId, {
+					$push: { songs: id },
+				});
+			}
+		}
+
+		res.status(200).json(updatedSong);
+	} catch (error) {
+		console.log("Error in updateSong", error);
+		next(error);
+	}
+};
+
 export const deleteSong = async (req, res, next) => {
 	try {
 		const { id } = req.params;
-
 		const song = await Song.findById(id);
 
-		// if song belongs to an album, update the album's songs array
 		if (song.albumId) {
 			await Album.findByIdAndUpdate(song.albumId, {
 				$pull: { songs: song._id },
@@ -67,7 +125,6 @@ export const deleteSong = async (req, res, next) => {
 		}
 
 		await Song.findByIdAndDelete(id);
-
 		res.status(200).json({ message: "Song deleted successfully" });
 	} catch (error) {
 		console.log("Error in deleteSong", error);
@@ -77,7 +134,7 @@ export const deleteSong = async (req, res, next) => {
 
 export const createAlbum = async (req, res, next) => {
 	try {
-		const { title, artist, releaseYear } = req.body;
+		const { title, artist, description, releaseYear } = req.body;
 		const { imageFile } = req.files;
 
 		const imageUrl = await uploadToCloudinary(imageFile);
@@ -85,15 +142,50 @@ export const createAlbum = async (req, res, next) => {
 		const album = new Album({
 			title,
 			artist,
+			description,
 			imageUrl,
 			releaseYear,
 		});
 
 		await album.save();
-
 		res.status(201).json(album);
 	} catch (error) {
 		console.log("Error in createAlbum", error);
+		next(error);
+	}
+};
+
+export const updateAlbum = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { title, artist, description, releaseYear } = req.body;
+
+		const album = await Album.findById(id);
+		if (!album) {
+			return res.status(404).json({ message: "Album not found" });
+		}
+
+		let imageUrl = album.imageUrl;
+
+		if (req.files && req.files.imageFile) {
+			imageUrl = await uploadToCloudinary(req.files.imageFile);
+		}
+
+		const updatedAlbum = await Album.findByIdAndUpdate(
+			id,
+			{
+				title,
+				artist,
+				description,
+				releaseYear,
+				imageUrl,
+			},
+			{ new: true } // Quan trọng để Zustand lấy được data mới nhất
+		);
+
+		res.status(200).json(updatedAlbum);
+	} catch (error) {
+		console.log("Error in updateAlbum", error);
 		next(error);
 	}
 };

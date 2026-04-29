@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Calendar, Trash2 } from "lucide-react";
+import UpdateSongDialog from "./UpdateSongDialog"
 
 const SongsTable = () => {
-	const { songs, isLoading, error, deleteSong } = useMusicStore();
+	const { isLoading, error, deleteSong, getFilteredSongs } = useMusicStore();
+	const filteredSongs = getFilteredSongs();
 
 	if (isLoading) {
 		return (
@@ -29,6 +31,7 @@ const SongsTable = () => {
 					<TableHead className='w-[50px]'></TableHead>
 					<TableHead>Title</TableHead>
 					<TableHead>Artist</TableHead>
+					<TableHead>Description</TableHead>
 					<TableHead>Mood</TableHead>
 					<TableHead>Release Date</TableHead>
 					<TableHead className='text-right'>Actions</TableHead>
@@ -36,13 +39,14 @@ const SongsTable = () => {
 			</TableHeader>
 
 			<TableBody>
-				{songs.map((song) => (
+				{filteredSongs.map((song) => (
 					<TableRow key={song._id} className='hover:bg-zinc-800/50'>
 						<TableCell>
 							<img src={song.imageUrl} alt={song.title} className='size-10 rounded object-cover' />
 						</TableCell>
-						<TableCell className='font-medium'>{song.title}</TableCell>
+						<TableCell>{song.title}</TableCell>
 						<TableCell>{song.artist}</TableCell>
+						<TableCell>{song.description}</TableCell>
 						<TableCell>{song.mood}</TableCell>
 						<TableCell>
 							<span className='inline-flex items-center gap-1 text-zinc-400'>
@@ -52,7 +56,9 @@ const SongsTable = () => {
 						</TableCell>
 
 						<TableCell className='text-right'>
+							
 							<div className='flex gap-2 justify-end'>
+								<UpdateSongDialog song={song} />
 								<Button
 									variant={"ghost"}
 									size={"sm"}

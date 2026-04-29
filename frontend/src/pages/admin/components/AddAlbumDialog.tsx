@@ -9,7 +9,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { axiosInstance } from "@/lib/axios";
+import { useMusicStore } from "@/stores/useMusicStore";
 import { Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -18,10 +18,12 @@ const AddAlbumDialog = () => {
 	const [albumDialogOpen, setAlbumDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const { addAlbum } = useMusicStore();
 
 	const [newAlbum, setNewAlbum] = useState({
 		title: "",
 		artist: "",
+		description: "",
 		releaseYear: new Date().getFullYear(),
 	});
 
@@ -48,20 +50,16 @@ const AddAlbumDialog = () => {
 			formData.append("releaseYear", newAlbum.releaseYear.toString());
 			formData.append("imageFile", imageFile);
 
-			await axiosInstance.post("/admin/albums", formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			});
+			await addAlbum(formData)
 
 			setNewAlbum({
 				title: "",
 				artist: "",
+				description: "",
 				releaseYear: new Date().getFullYear(),
 			});
 			setImageFile(null);
 			setAlbumDialogOpen(false);
-			toast.success("Album created successfully");
 		} catch (error: any) {
 			toast.error("Failed to create album: " + error.message);
 		} finally {
@@ -122,6 +120,15 @@ const AddAlbumDialog = () => {
 							onChange={(e) => setNewAlbum({ ...newAlbum, artist: e.target.value })}
 							className='bg-zinc-800 border-zinc-700'
 							placeholder='Enter artist name'
+						/>
+					</div>
+					<div className='space-y-2'>
+						<label className='text-sm font-medium'>Description</label>
+						<textarea
+							value={newAlbum.description}
+							onChange={(e) => setNewAlbum({ ...newAlbum, description: e.target.value })}
+							className='flex min-h-[80px] w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-600/50 focus:border-orange-600/50 resize-none'
+							placeholder="Write a brief description about this song..."
 						/>
 					</div>
 					<div className='space-y-2'>

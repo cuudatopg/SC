@@ -28,7 +28,11 @@ const songSchema = new mongoose.Schema({
     },
     mood: [
         {type: String, required: true}
-    ]
+    ],
+    description: {
+        type: String,
+        requỉed: false
+    }
 }, {timestamps: true});
 
 export const Song = mongoose.model("Song", songSchema);
