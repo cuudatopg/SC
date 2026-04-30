@@ -24,7 +24,7 @@ export default function SearchPage() {
     setLoading(true);
     setHasSearched(true);
     try {
-      const res = await fetch(`https://moosi.onrender.com/api/search?q=${encodeURIComponent(searchTerm)}`);
+      const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(searchTerm)}`);
       const data = await res.json();
       
       setResults(data);
@@ -209,7 +209,7 @@ const SongItem = ({ song, onPlay, isActive }: { song: any, onPlay: () => void, i
     </div>
     {song.mood && (
       <span className="ml-2 px-2 py-0.5 text-[10px] bg-zinc-800 text-zinc-500 rounded-full border border-zinc-700 uppercase font-medium">
-        {song.mood}
+        {song.mood[0]}
       </span>
     )}
   </div>
