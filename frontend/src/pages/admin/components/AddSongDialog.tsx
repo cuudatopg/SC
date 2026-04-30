@@ -218,24 +218,16 @@ const AddSongDialog = () => {
 
 					<div className='grid grid-cols-2 gap-4'>
 						<div className='space-y-2'>
-							<label className='text-sm font-medium'>Mood</label>
-							<Select
-								value={newSong.mood}
-								onValueChange={(value) => setNewSong({ ...newSong, mood: value })}
-							>
-								<SelectTrigger className='bg-zinc-800 border-zinc-700'>
-									<SelectValue placeholder='Select mood' />
-								</SelectTrigger>
-								<SelectContent className='bg-zinc-800 border-zinc-700'>
-									<SelectItem value="angry">Angry</SelectItem>
-									<SelectItem value="energetic">Energetic</SelectItem>
-									<SelectItem value="fear">Fear</SelectItem>
-									<SelectItem value="happy">Happy</SelectItem>
-									<SelectItem value="neutral">Neutral</SelectItem>
-									<SelectItem value="sad">Sad</SelectItem>
-									<SelectItem value="surprise">Surprise</SelectItem>
-								</SelectContent>
-							</Select>
+							<label className='text-sm font-medium'>Mood (Multiple allowed)</label>
+								<Input
+									value={newSong.mood}
+									onChange={(e) => setNewSong({ ...newSong, mood: e.target.value })}
+									className='bg-zinc-800 border-zinc-700 focus:ring-orange-600/50'
+									placeholder="e.g. Happy, Energetic, Chill"
+								/>
+								<p className='text-[10px] text-zinc-500 italic'>
+									Separate moods with commas (e.g. Sad, Lofi)
+								</p>
 						</div>
 
 						<div className='space-y-2'>

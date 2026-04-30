@@ -1,6 +1,7 @@
 import { Song } from "../models/song.model.js";
 import { Album } from "../models/album.model.js";
 import cloudinary from "../lib/cloudinary.js";
+import { generateEmbedding } from "../lib/embedding.js";
 
 // helper function for cloudinary uploads
 const uploadToCloudinary = async (file) => {
@@ -15,102 +16,48 @@ const uploadToCloudinary = async (file) => {
 	}
 };
 
-export const createSong = async (req, res, next) => {
-	try {
-		if (!req.files || !req.files.audioFile || !req.files.imageFile) {
-			return res.status(400).json({ message: "Please upload all files" });
-		}
+export const createSong = async (req, res) => {
+    try {
+        let { title, artist, description, mood, albumId } = req.body;
 
-		const { title, artist, albumId, duration, mood, description } = req.body;
-		const audioFile = req.files.audioFile;
-		const imageFile = req.files.imageFile;
+        if (typeof mood === "string") {
+            mood = mood.split(",").map(m => m.trim());
+        }
 
-		const audioUrl = await uploadToCloudinary(audioFile);
-		const imageUrl = await uploadToCloudinary(imageFile);
-
-		const song = new Song({
-			title,
-			mood,
-			description,
-			artist,
-			audioUrl,
-			imageUrl,
-			duration,
-			albumId: albumId || null,
-		});
-
-		await song.save();
-
-		if (albumId) {
-			await Album.findByIdAndUpdate(albumId, {
-				$push: { songs: song._id },
-			});
-		}
-		res.status(201).json(song);
-	} catch (error) {
-		console.log("Error in createSong", error);
-		next(error);
-	}
+        const vector = await generateEmbedding({ title, artist, description, mood });
+        const newSong = new Song({
+            title, artist, description, mood, albumId,
+            audioUrl: req.files.audio[0].path,
+            imageUrl: req.files.image[0].path,
+            embedding: vector || []
+        });
+        await newSong.save();
+        return res.status(201).json(newSong);
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi tạo bài hát", error: error.message });
+    }
 };
 
-export const updateSong = async (req, res, next) => {
-	try {
-		const { id } = req.params;
-		const { title, artist, albumId, duration, mood, description } = req.body;
+export const updateSong = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const oldSong = await Song.findById(id);
+        const updateData = { ...req.body };
 
-		const song = await Song.findById(id);
-		if (!song) {
-			return res.status(404).json({ message: "Song not found" });
-		}
+        if (req.body.title || req.body.artist || req.body.description || req.body.mood) {
+            updateData.embedding = await generateEmbedding({
+                title: req.body.title || oldSong.title,
+                artist: req.body.artist || oldSong.artist,
+                description: req.body.description || oldSong.description,
+                mood: req.body.mood || oldSong.mood
+            });
+        }
 
-		let audioUrl = song.audioUrl;
-		let imageUrl = song.imageUrl;
-
-		if (req.files) {
-			if (req.files.audioFile) {
-				audioUrl = await uploadToCloudinary(req.files.audioFile);
-			}
-			if (req.files.imageFile) {
-				imageUrl = await uploadToCloudinary(req.files.imageFile);
-			}
-		}
-
-		const oldAlbumId = song.albumId;
-
-		const updatedSong = await Song.findByIdAndUpdate(
-			id,
-			{
-				title,
-				artist,
-				mood,
-				description,
-				duration,
-				audioUrl,
-				imageUrl,
-				albumId: albumId === "none" ? null : albumId,
-			},
-			{ new: true }
-		);
-
-		if (oldAlbumId?.toString() !== albumId) {
-			if (oldAlbumId) {
-				await Album.findByIdAndUpdate(oldAlbumId, {
-					$pull: { songs: id },
-				});
-			}
-
-			if (albumId && albumId !== "none") {
-				await Album.findByIdAndUpdate(albumId, {
-					$push: { songs: id },
-				});
-			}
-		}
-
-		res.status(200).json(updatedSong);
-	} catch (error) {
-		console.log("Error in updateSong", error);
-		next(error);
-	}
+        const updated = await Song.findByIdAndUpdate(id, updateData, { new: true });
+        return res.status(200).json(updated);
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi cập nhật", error: error.message });
+    }
 };
 
 export const deleteSong = async (req, res, next) => {
@@ -132,62 +79,42 @@ export const deleteSong = async (req, res, next) => {
 	}
 };
 
-export const createAlbum = async (req, res, next) => {
-	try {
-		const { title, artist, description, releaseYear } = req.body;
-		const { imageFile } = req.files;
+export const createAlbum = async (req, res) => {
+    try {
+        const { title, artist, description } = req.body;
+        const vector = await generateEmbedding({ title, artist, description }); // Không có mood
 
-		const imageUrl = await uploadToCloudinary(imageFile);
-
-		const album = new Album({
-			title,
-			artist,
-			description,
-			imageUrl,
-			releaseYear,
-		});
-
-		await album.save();
-		res.status(201).json(album);
-	} catch (error) {
-		console.log("Error in createAlbum", error);
-		next(error);
-	}
+        const newAlbum = new Album({
+            title, artist, description,
+            imageUrl: req.file.path,
+            embedding: vector || []
+        });
+        await newAlbum.save();
+        return res.status(201).json(newAlbum);
+    } catch (error) {
+        return res.status(500).json({ message: "Lỗi tạo album", error: error.message });
+    }
 };
 
-export const updateAlbum = async (req, res, next) => {
-	try {
-		const { id } = req.params;
-		const { title, artist, description, releaseYear } = req.body;
+export const updateAlbum = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = { ...req.body };
 
-		const album = await Album.findById(id);
-		if (!album) {
-			return res.status(404).json({ message: "Album not found" });
-		}
+        if (req.body.title || req.body.artist || req.body.description) {
+            const oldAlbum = await Album.findById(id);
+            updateData.embedding = await generateEmbedding({
+                title: req.body.title || oldAlbum.title,
+                artist: req.body.artist || oldAlbum.artist,
+                description: req.body.description || oldAlbum.description
+            });
+        }
 
-		let imageUrl = album.imageUrl;
-
-		if (req.files && req.files.imageFile) {
-			imageUrl = await uploadToCloudinary(req.files.imageFile);
-		}
-
-		const updatedAlbum = await Album.findByIdAndUpdate(
-			id,
-			{
-				title,
-				artist,
-				description,
-				releaseYear,
-				imageUrl,
-			},
-			{ new: true } // Quan trọng để Zustand lấy được data mới nhất
-		);
-
-		res.status(200).json(updatedAlbum);
-	} catch (error) {
-		console.log("Error in updateAlbum", error);
-		next(error);
-	}
+        const updatedAlbum = await Album.findByIdAndUpdate(id, updateData, { new: true });
+        res.status(200).json(updatedAlbum);
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi cập nhật album", error });
+    }
 };
 
 export const deleteAlbum = async (req, res, next) => {

@@ -32,6 +32,10 @@ const songSchema = new mongoose.Schema({
     description: {
         type: String,
         requỉed: false
+    },
+    embedding: {
+        type: [Number],
+        default: []
     }
 }, {timestamps: true});
 

@@ -8,6 +8,7 @@ const albumSchema = new mongoose.Schema(
 		description: { type: String, required: false},
 		releaseYear: { type: Number, required: true },
 		songs: [{ type: mongoose.Schema.Types.ObjectId, ref: "Song" }],
+		embedding: { type: [Number], default: [] }
 	},
 	{ timestamps: true }
 ); //  createdAt, updatedAt

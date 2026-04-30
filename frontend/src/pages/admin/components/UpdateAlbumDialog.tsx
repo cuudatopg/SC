@@ -22,6 +22,7 @@ const UpdateAlbumDialog = ({ album }: { album: Album }) => {
 	const [editAlbum, setEditAlbum] = useState({
 		title: album.title,
 		artist: album.artist,
+		description: album.description,
 		releaseYear: album.releaseYear,
 	});
 
@@ -101,6 +102,16 @@ const UpdateAlbumDialog = ({ album }: { album: Album }) => {
 							value={editAlbum.artist}
 							onChange={(e) => setEditAlbum({ ...editAlbum, artist: e.target.value })}
 							className='bg-zinc-800 border-zinc-700 focus-visible:ring-orange-600'
+						/>
+					</div>
+
+					<div className='space-y-2'>
+						<label className='text-sm font-medium'>Description</label>
+						<textarea
+							value={editAlbum.description}
+							onChange={(e) => setEditAlbum({ ...editAlbum, description: e.target.value })}
+							className='flex min-h-[80px] w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-600/50 focus:border-orange-600/50 resize-none'
+							placeholder="Write a brief description about this song..."
 						/>
 					</div>
 

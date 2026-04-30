@@ -171,18 +171,11 @@ const UpdateSongDialog = ({ song }: { song: Song }) => {
 					<div className='grid grid-cols-2 gap-4'>
 						<div className='space-y-2'>
 							<label className='text-sm font-medium text-zinc-100'>Mood</label>
-							<Select value={editSong.mood} onValueChange={(value) => setEditSong({ ...editSong, mood: value })}>
-								<SelectTrigger className='bg-zinc-800 border-zinc-700 focus:ring-orange-600 text-zinc-100'>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent className='bg-zinc-800 border-zinc-700 text-zinc-100'>
-									<SelectItem value="angry">Angry</SelectItem>
-									<SelectItem value="energetic">Energetic</SelectItem>
-									<SelectItem value="happy">Happy</SelectItem>
-									<SelectItem value="neutral">Neutral</SelectItem>
-									<SelectItem value="sad">Sad</SelectItem>
-								</SelectContent>
-							</Select>
+							<Input
+								value={editSong.mood}
+								onChange={(e) => setEditSong({ ...editSong, mood: e.target.value })}
+								className='bg-zinc-800 border-zinc-700 focus-visible:ring-orange-600 text-zinc-100'
+							/>
 						</div>
 
 						<div className='space-y-2'>
