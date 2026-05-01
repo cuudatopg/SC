@@ -3,19 +3,19 @@ import mongoose from "mongoose";
 const songSchema = new mongoose.Schema({
     title: {
         type: String,
-        Required: true
+        required: true
     },
     artist: {
         type: String,
-        Required: true
+        required: true
     },
     imageUrl: {
         type: String,
-        Required: true
+        required: true
     },
     audioUrl: {
         type: String,
-        Required: true
+        required: true
     },
     duration: {
         type: Number,
@@ -31,7 +31,7 @@ const songSchema = new mongoose.Schema({
     ],
     description: {
         type: String,
-        requỉed: false
+        required: false
     },
     embedding: {
         type: [Number],

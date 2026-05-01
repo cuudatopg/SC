@@ -90,8 +90,8 @@ const AddSongDialog = () => {
 				formData.append("albumId", newSong.album);
 			}
 
-			formData.append("audioFile", files.audio);
-			formData.append("imageFile", files.image);
+			formData.append("audio", files.audio);
+			formData.append("image", files.image);
 
 			await addSong(formData);
 

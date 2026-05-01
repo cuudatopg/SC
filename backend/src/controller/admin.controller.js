@@ -18,22 +18,48 @@ const uploadToCloudinary = async (file) => {
 
 export const createSong = async (req, res) => {
     try {
-        let { title, artist, description, mood, albumId } = req.body;
+        let { title, artist, description, mood, albumId, duration } = req.body;
+
+        // 1. Kiểm tra file có tồn tại không
+        if (!req.files || !req.files.audio || !req.files.image) {
+            return res.status(400).json({ message: "Vui lòng upload đầy đủ file audio và image" });
+        }
+
+        // 2. Upload lên Cloudinary để lấy URL (vì model yêu cầu URL string)
+        // Lưu ý: Nếu dùng express-fileupload thì là req.files.audio, không phải mảng [0]
+        const audioUrl = await uploadToCloudinary(req.files.audio);
+        const imageUrl = await uploadToCloudinary(req.files.image);
 
         if (typeof mood === "string") {
             mood = mood.split(",").map(m => m.trim());
         }
 
         const vector = await generateEmbedding({ title, artist, description, mood });
+
         const newSong = new Song({
-            title, artist, description, mood, albumId,
-            audioUrl: req.files.audio[0].path,
-            imageUrl: req.files.image[0].path,
+            title,
+            artist,
+            description,
+            mood,
+            albumId: albumId || null,
+            audioUrl, // Gán URL từ Cloudinary
+            imageUrl, // Gán URL từ Cloudinary
+            duration: Number(duration) || 0, // Đảm bảo là số
             embedding: vector || []
         });
+
         await newSong.save();
+
+        // Cập nhật album nếu có
+        if (albumId) {
+            await Album.findByIdAndUpdate(albumId, {
+                $push: { songs: newSong._id },
+            });
+        }
+
         return res.status(201).json(newSong);
     } catch (error) {
+        console.error("Chi tiết lỗi tại Server:", error); // Log ra để bạn xem ở Terminal
         return res.status(500).json({ message: "Lỗi tạo bài hát", error: error.message });
     }
 };
