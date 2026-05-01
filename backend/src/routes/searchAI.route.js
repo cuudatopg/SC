@@ -1,9 +1,8 @@
 import { Router } from "express";
-import { searchAI } from "../controller/search.controller.js";
+import { searchAI } from "../controller/searchAI.controller.js";
 
 const router = Router();
 
-// Endpoint: GET /api/search?q=...
-router.get("/", searchAI);
+router.post("/", searchAI);
 
-export default router;
+export default router;  

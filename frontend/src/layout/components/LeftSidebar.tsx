@@ -4,11 +4,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { SignedIn } from "@clerk/clerk-react";
-import { HomeIcon, Library, Search } from "lucide-react";
+import { HomeIcon, Library, Search, Sparkles } from "lucide-react"; // Thêm Sparkles
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-
-
 
 const LeftSidebar = () => {
 	const { albums, fetchAlbums, isLoading } = useMusicStore();
@@ -17,12 +15,9 @@ const LeftSidebar = () => {
 		fetchAlbums();
 	}, [fetchAlbums]);
 
-	console.log({ albums });
-
 	return (
 		<div className='h-full flex flex-col gap-2'>
 			{/* Navigation menu */}
-
 			<div className='rounded-lg bg-zinc-900 p-4'>
 				<div className='space-y-2'>
 					<Link
@@ -37,7 +32,9 @@ const LeftSidebar = () => {
 						<HomeIcon className='mr-2 size-5' />
 						<span className='hidden md:inline'>Home</span>
 					</Link>
+
 					<SignedIn>
+						{/* Search thường */}
 						<Link
 							to={"/search"}
 							className={cn(
@@ -50,12 +47,30 @@ const LeftSidebar = () => {
 							<Search className='mr-2 size-5' />
 							<span className='hidden md:inline'>Search</span>
 						</Link>
+
+						{/* Nút Search AI đặc biệt */}
+						<Link
+							to={"/ai-vision"}
+							className={cn(
+								buttonVariants({
+									variant: "ghost",
+									className: "w-full justify-start text-white hover:bg-zinc-800 group",
+								})
+							)}
+						>
+							<div className="relative flex items-center">
+								<Sparkles className='mr-2 size-5 text-orange-500 group-hover:animate-pulse' />
+								<span className='hidden md:inline bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent font-semibold'>
+									AI Mood Search
+								</span>
+							</div>
+						</Link>
 					</SignedIn>
 				</div>
 			</div>
 
 			{/* Library section */}
-			<div className='flex-1 rounded-lg bg-zinc-900 p-4'>
+			<div className='flex-1 rounded-lg bg-zinc-900 p-4 overflow-hidden'>
 				<div className='flex items-center justify-between mb-4'>
 					<div className='flex items-center text-white px-2'>
 						<Library className='size-5 mr-2' />
@@ -93,4 +108,5 @@ const LeftSidebar = () => {
 		</div>
 	);
 };
+
 export default LeftSidebar;

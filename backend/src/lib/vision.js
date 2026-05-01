@@ -1,4 +1,4 @@
-import tf from "@tensorflow/tfjs-node";
+import tf from "@tensorflow/tfjs";
 import fs from "fs";
 
 let model;
@@ -7,7 +7,7 @@ let model;
 const loadModel = async () => {
     if (!model) {
         // Đường dẫn đến file json model của bạn
-        const modelPath = `file://${process.cwd()}/public/emotion_model/model.json`;
+        const modelPath = `file://${process.cwd()}/emotion_model/model.json`;
         model = await tf.loadLayersModel(modelPath);
         console.log("✅ Emotion Model Loaded");
     }

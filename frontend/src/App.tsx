@@ -6,6 +6,7 @@ import MainLayout from "./layout/MainLayout";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
 import SearchPage from "./pages/search/searchPage";
+import SearchAIPage from "./pages/search/SearchAIPage";
 
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
@@ -26,6 +27,7 @@ function App() {
 					<Route path='/albums/:albumId' element={<AlbumPage />} />
 					<Route path='*' element={<NotFoundPage />} />
 					<Route path='/search' element={<SearchPage />} />
+					<Route path='/ai-vision' element={<SearchAIPage />} />
 				</Route>
 			</Routes>
 			<Toaster />

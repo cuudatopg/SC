@@ -18,7 +18,8 @@ import authRoutes from "./routes/auth.route.js";
 import songRoutes from "./routes/song.route.js";
 import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
-import searchRoutes from "./routes/search.route.js"
+import searchRoutes from "./routes/search.route.js";
+import searchAIRoute from "./routes/searchAI.route.js";
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ cron.schedule("0 * * * *", () => {
 	}
 });
 
+
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
@@ -72,6 +74,7 @@ app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/ai-vision", searchAIRoute);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../frontend/dist")));

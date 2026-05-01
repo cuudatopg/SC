@@ -24,7 +24,7 @@ export default function SearchPage() {
     setLoading(true);
     setHasSearched(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(searchTerm)}`);
+      const res = await fetch(`https://moosi.onrender.com/api/search?q=${encodeURIComponent(searchTerm)}`);
       const data = await res.json();
       
       setResults(data);
