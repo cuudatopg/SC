@@ -38,7 +38,7 @@ export const generateEmbedding = async (data) => {
         const embeddings = await model.embed([text]);
         const array = await embeddings.array();
         
-        embeddings.dispose(); 
+        embeddings.dispose(); // Giải phóng bộ nhớ
         return normalize(array[0]);
     } catch (err) {
         console.error("Embedding error:", err.message);
