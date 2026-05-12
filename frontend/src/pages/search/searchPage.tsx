@@ -209,7 +209,7 @@ const SongItem = ({ song, onPlay, isActive }: { song: any, onPlay: () => void, i
     </div>
     {song.mood && (
       <span className="ml-2 px-2 py-0.5 text-[10px] bg-zinc-800 text-zinc-500 rounded-full border border-zinc-700 uppercase font-medium">
-        {song.mood[0]}
+        {Array.isArray(song.mood) ? song.mood.join(", ") : song.mood}
       </span>
     )}
   </div>
