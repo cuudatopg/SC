@@ -54,7 +54,7 @@ export default function SearchPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 h-5 w-5" />
             <input 
               className="w-full pl-12 pr-4 h-14 bg-zinc-800 border-none rounded-full text-lg focus:outline-none focus:ring-1 focus:ring-white transition-all text-white placeholder:text-zinc-500"
-              placeholder="Find your song, artist or album..."
+              placeholder="Find your song, artist or album using name or mood..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
